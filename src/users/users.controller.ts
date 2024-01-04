@@ -1,21 +1,31 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { User } from 'src/enitites/user.entities';
+import { AuthGaurd } from 'src/gaurds/auth.gaurd';
 
 @Controller('users')
 export class UsersController {
-
-    @Post("/signup")
-    userSignup():string{
-        return "user registered successfully"
+    constructor(private readonly usersService: UsersService) {}
+    
+    @Post("/register")
+    @UseGuards(AuthGaurd)
+    registerUser(@Body() user:User): Promise<User> {
+        return this.usersService.registerUser(user);
+    }
+    
+    @Post("/login")
+    loginUser(@Body() user:User) : Promise<string>{
+        return this.usersService.loginUser(user)
     }
 
-    @Post("/signin")
-    userSignin():string{        
-        return "user loggedin"
+    @Get("/get/:id")
+    getSingleUser(@Param()param : {id:string} ): Promise<User> {
+        const {id} = param
+        return this.usersService.getUsers(+id);
     }
 
-    @Get("/getall")
-    getUsers():string{
-        return "logic to fetch all users"
+    @Get("/get-all-users")
+    getAllUser(): Promise<User[]> {
+        return this.usersService.getAllUsers();
     }
-
 }
