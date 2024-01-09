@@ -7,12 +7,14 @@ import { User } from './enitites/user.entities';
 import { Channel } from './enitites/channel.entity';
 import { Subscription } from './enitites/subscription.entity';
 import { Plan } from './enitites/plan.entity';
-import { verifyToken, loginMiddileware } from './middleware/auth';
+import { TokenVerification, IsOperator, LoginMiddileware } from './middleware/auth';
 import { PlansController } from './plans/plans.controller';
 import { PlansService } from './plans/plans.service';
 import { ChannelsController } from './channels/channels.controller';
 import { ChannelsService } from './channels/channels.service';
 import { config } from 'dotenv';
+import { SubscribeController } from './subscribe/subscribe.controller';
+import { SubscribeService } from './subscribe/subscribe.service';
 
 @Module({
   imports: [
@@ -35,13 +37,13 @@ import { config } from 'dotenv';
     }),
     TypeOrmModule.forFeature([User,Channel,Subscription,Plan])
   ],
-  controllers: [UsersController, PlansController, ChannelsController],
-  providers: [UsersService, PlansService, ChannelsService],
+  controllers: [UsersController, PlansController, ChannelsController, SubscribeController],
+  providers: [UsersService, PlansService, ChannelsService, SubscribeService],
 })
 
 export class AppModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(verifyToken)
+    consumer.apply(TokenVerification)
     .exclude(
       { path: 'users/login', method: RequestMethod.POST },
       { path: 'users/register', method: RequestMethod.POST },
@@ -49,13 +51,23 @@ export class AppModule implements NestModule{
     .forRoutes(
       PlansController,
       ChannelsController,
-      UsersController
+      UsersController,
+      SubscribeController
     )
 
-    consumer.apply(loginMiddileware)
+    consumer.apply(LoginMiddileware)
     .forRoutes({
       path: 'users/login', method: RequestMethod.POST
     })
+    
+    consumer.apply(IsOperator)
+    .exclude(
+      {path: 'channel/get-channels', method: RequestMethod.GET},
+      {path: 'plans/get-plan', method: RequestMethod.GET},
+    )
+    .forRoutes(
+      ChannelsController,
+      PlansController
+    )
   }
-  
 }

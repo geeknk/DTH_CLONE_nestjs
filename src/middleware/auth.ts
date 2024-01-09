@@ -4,19 +4,18 @@ import * as jwt from 'jsonwebtoken'
 import { JwtPayload, Secret } from 'jsonwebtoken';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs'
+import * as env from 'dotenv'
+env.config()
 
 @Injectable()
-export class verifyToken implements NestMiddleware {
+export class TokenVerification implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const bearerHeader = req.headers['authorization'];
-    if (typeof bearerHeader !== 'undefined') {
-      const bearer = bearerHeader.split(' ');
-      const token = bearer[1];      
-      const { email, id } = jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN_SECRET as Secret,
-      ) as JwtPayload;
-      req.body = { email, token, id };
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {     
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as Secret) as JwtPayload;
+
+      req[`data`] = decoded
+      
       next();
     } else {
       return res.status(409).send({ success: false, msg: 'invalid token' });
@@ -25,7 +24,7 @@ export class verifyToken implements NestMiddleware {
 }
 
 @Injectable()
-export class loginMiddileware implements NestMiddleware {
+export class LoginMiddileware implements NestMiddleware {
   constructor(private readonly usersService: UsersService) {}
   async use(req: Request, res: Response, next: NextFunction) {
     
@@ -41,5 +40,20 @@ export class loginMiddileware implements NestMiddleware {
     req.body.username = userData.username;
 
     next()
+  }
+}
+
+@Injectable()
+export class IsOperator implements NestMiddleware {
+  constructor(private readonly usersService: UsersService) {}
+  async use(req: Request, res: Response, next: NextFunction) {
+    
+    const userData = await this.usersService.fetchUserData(req[`data`].email)
+
+    const role = +process.env.OPERATER
+
+    if (userData.role == role) return next()
+
+    res.status(401).send("Unauthorized")
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Get, Post, Controller, Delete } from '@nestjs/common';
+import { Body, Get, Post, Controller, Delete, Param } from '@nestjs/common';
 import { PlansService } from './plans.service';
 import { Plan } from 'src/enitites/plan.entity';
 import { DeleteResult } from 'typeorm';
@@ -17,9 +17,13 @@ export class PlansController {
         return this.plansService.getPlans();
     }
     
+    @Get("/get-plan/:id")
+    getPlanById(@Param("id") id:number): Promise<Plan> {
+        return this.plansService.getPlanById(id);
+    }
+    
     @Delete("/delete:id")
     deletePlan(id:number): Promise<DeleteResult> {
         return this.plansService.deletePlan(id);
     }
-    
 }

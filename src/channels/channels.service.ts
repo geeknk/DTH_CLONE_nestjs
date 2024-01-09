@@ -20,7 +20,6 @@ export class ChannelsService {
   }
   
   deleteChannels(id: number):Promise<DeleteResult> {
-    return this.channelsRepository.delete({id});
+    return this.channelsRepository.delete(id);
   }
-
 }
