@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from 'src/enitites/user.entities';
 import { AuthGaurd } from 'src/gaurds/auth.gaurd';
@@ -14,7 +14,7 @@ export class UsersController {
     }
     
     @Post("/login")
-    loginUser(@Body() user:User) : Promise<string>{
+    loginUser(@Body() user:User) : Promise<string>{        
         return this.usersService.loginUser(user)
     }
 
@@ -27,5 +27,10 @@ export class UsersController {
     @Get("/get-all-users")
     getAllUser(): Promise<User[]> {
         return this.usersService.getAllUsers();
+    }
+    
+    @Get("/subscription")
+    getAllSubscription(@Req() req:Request): Promise<User> {
+        return this.usersService.getAllSubscription(req[`data`].id);
     }
 }

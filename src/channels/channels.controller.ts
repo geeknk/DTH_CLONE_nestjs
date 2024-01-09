@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { Channel } from 'src/enitites/channel.entity';
 import { DeleteResult } from 'typeorm';
@@ -7,8 +7,8 @@ import { DeleteResult } from 'typeorm';
 export class ChannelsController {
     constructor(private readonly channelsService: ChannelsService) {}
     
-    @Post("/create-channel")
-    registerUser(@Body() channel:Channel): Promise<Channel> {
+    @Post("/add")
+    registerUser(@Body() channel:Channel): Promise<Channel> {           
         return this.channelsService.createChannel(channel);
     }
     
@@ -17,9 +17,8 @@ export class ChannelsController {
         return this.channelsService.getChannels();
     }
     
-    @Delete("/delete-channel/:id")
+    @Delete("/delete/:id")
     deleteChannel(@Param() id:number): Promise<DeleteResult> {
         return this.channelsService.deleteChannels(id);
     }
-    
 }

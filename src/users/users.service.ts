@@ -33,6 +33,15 @@ export class UsersService {
   async fetchUserData(email: string) : Promise<User>{
     return await this.usersRepository.findOne({where:{email}})
   };
+  
+  async getAllSubscription(id: number) : Promise<User>{
+    return await this.usersRepository.findOne({
+      where:{id},
+      relations: {
+        subscribe: true,
+      },
+    })
+  };
 
   async token (userData:User) {
     const accessToken = jwt.sign(
